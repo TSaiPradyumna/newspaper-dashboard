@@ -409,7 +409,7 @@ def generate_professional_dashboard(newspaper_data):
     </html>
     """
 
-    with open("index,html", "w", encoding="utf-8") as file:
+    with open("index.html", "w", encoding="utf-8") as file:
         file.write(html_content)
     print("\n[SUCCESS] ProNews Dashboard updated!")
 
