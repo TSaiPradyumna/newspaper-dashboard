@@ -14,7 +14,6 @@
             ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
             ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
             
-            /* Ensure iframe background is white during fullscreen */
             #viewer-container:fullscreen { background-color: white; padding: 0; border-radius: 0; }
             #viewer-container:-webkit-full-screen { background-color: white; padding: 0; border-radius: 0; }
             #viewer-container:-ms-fullscreen { background-color: white; padding: 0; border-radius: 0; }
@@ -22,6 +21,7 @@
     </head>
     <body class="bg-slate-50 text-slate-800 h-screen flex overflow-hidden">
 
+        <!-- Sidebar -->
         <aside class="w-72 bg-white border-r border-slate-200 flex flex-col h-full shadow-[4px_0_24px_rgba(0,0,0,0.02)] z-20">
             <div class="p-6 border-b border-slate-100 bg-gradient-to-b from-slate-50 to-white">
                 <h1 class="text-2xl font-bold text-indigo-700 tracking-tight flex items-center gap-2.5">
@@ -40,6 +40,7 @@
             </div>
         </aside>
 
+        <!-- Main Content -->
         <main class="flex-1 flex flex-col h-full relative bg-slate-50/50">
             <header class="bg-white px-8 py-5 border-b border-slate-200 flex justify-between items-center shadow-sm z-10">
                 <div>
@@ -80,7 +81,7 @@
         </main>
 
         <script>
-            const db = {"The Hindu": [{"date": "August 01, 2026", "data": "https://www.indiags.com/newspaper/pdf.php?file=uploads%2FTHE+HINDU+HD+Delhi+Editable+Full+Edition+01~08~2026.pdf", "type": "raw_embed"}], "Times of India": [{"date": "01 Aug 2026", "data": "1b2lDESwHLXWGAtAPMcLpKbew7KS-6AG_", "type": "embed"}, {"date": "31 Jul 2026", "data": "1x1hlNyyrPKfL4KHrVCgVWO9UewDG3KyC", "type": "embed"}, {"date": "30 Jul 2026", "data": "180i8TrkOY9E0q_O-gNbBlz--HB7J--pl", "type": "embed"}, {"date": "29 Jul 2026", "data": "1ZiqyT4nI6aUW5UlAN_rhba5tAy6CvSLy", "type": "embed"}, {"date": "27 Jul 2026", "data": "1UQl9N4y4ZLxqKmXfue_f6HCGFYwSiSRY", "type": "embed"}], "Live Mint": [{"date": "01 Aug 2026", "data": "14qfL2gAHWdpqugEKusw0qEtz0hNF3CRb", "type": "embed"}, {"date": "31 Jul 2026", "data": "1gjwHSpFa2KAbZ15vmFOdSJzjI7brNG6e", "type": "embed"}, {"date": "30 Jul 2026", "data": "1WdgMt4LW0QbEDx0mXfOsZB0DWfVFF3Le", "type": "embed"}, {"date": "29 Jul 2026", "data": "1h7QZYkqCob9qYLIiN0bK_yxiZWs_kaKT", "type": "embed"}, {"date": "27 Jul 2026", "data": "1zDUHD2WHHyDos0XQsXSI-wplaI4vXjgn", "type": "embed"}], "Economic Times": [{"date": "01 Aug 2026", "data": "1PCMG0WH56f-VEKounoF_h6WwVT5YpS61", "type": "embed"}, {"date": "31 Jul 2026", "data": "1x8WnXtG6livyFqEoTQ72-ixdSfuA6z-l", "type": "embed"}, {"date": "30 Jul 2026", "data": "1pDCtPgz1TbF40pYfWbig_dIBog0tiRkK", "type": "embed"}, {"date": "29 Jul 2026", "data": "1OmybXY-Bhb1JBb9YGSB_1tWvvtyoZ5rX", "type": "embed"}, {"date": "27 Jul 2026", "data": "1ihhSYKq-i1megy8dQAW8O8CWYHfYluMV", "type": "embed"}], "Hindustan Times": [{"date": "01 Aug 2026", "data": "1YQsMCe7VGSjcHXnYTVMOYPoz36A3WUks", "type": "embed"}, {"date": "31 Jul 2026", "data": "1pjyjE4BtEYBLcTEvq0yg7boAsqe7xpIa", "type": "embed"}, {"date": "30 Jul 2026", "data": "1fTjd56KUOktZgBL_4oEU2urM0A6D7dNL", "type": "embed"}, {"date": "29 Jul 2026", "data": "1LP-WGG6hW3b6QGQG6XCM5vjXm_Jzgyw7", "type": "embed"}, {"date": "27 Jul 2026", "data": "1v3ZtWFCrTMT0dJtR53hpKLreIPsOnwDl", "type": "embed"}], "Business Line": [{"date": "1 August 2026", "data": "1kZZQQ4Dx1MgyT_Ua6r6mUtKGihiHe4UN", "type": "embed"}, {"date": "31 July 2026", "data": "1Qx_oQxyJ3dzSncDb000zIvkgwvKpKYnX", "type": "embed"}, {"date": "30 July 2026", "data": "1oRMcyOx_esCqHG1FDy_EqNZSOyGUzUfC", "type": "embed"}, {"date": "29 July 2026", "data": "10eOOJD6zCVovsMnViWsUu1hJbAUHqJsY", "type": "embed"}, {"date": "28 July 2026", "data": "1m4bKBVOoFr88ha2I2k9D0TbMm2x-fepv", "type": "embed"}]};
+            const db = {"The Hindu": [{"date": "July 29, 2026", "data": "THE HINDU/the-hindu-2026-07-29.pdf", "type": "local_pdf"}, {"date": "July 30, 2026", "data": "THE HINDU/the-hindu-upsc-2026-07-30.pdf", "type": "local_pdf"}, {"date": "August 01, 2026", "data": "THE HINDU/the-hindu-2026-08-01.pdf", "type": "local_pdf"}], "Times of India": [{"date": "01 Aug 2026", "data": "1b2lDESwHLXWGAtAPMcLpKbew7KS-6AG_", "type": "embed"}, {"date": "31 Jul 2026", "data": "1x1hlNyyrPKfL4KHrVCgVWO9UewDG3KyC", "type": "embed"}, {"date": "30 Jul 2026", "data": "180i8TrkOY9E0q_O-gNbBlz--HB7J--pl", "type": "embed"}, {"date": "29 Jul 2026", "data": "1ZiqyT4nI6aUW5UlAN_rhba5tAy6CvSLy", "type": "embed"}, {"date": "27 Jul 2026", "data": "1UQl9N4y4ZLxqKmXfue_f6HCGFYwSiSRY", "type": "embed"}], "Live Mint": [{"date": "01 Aug 2026", "data": "14qfL2gAHWdpqugEKusw0qEtz0hNF3CRb", "type": "embed"}, {"date": "31 Jul 2026", "data": "1gjwHSpFa2KAbZ15vmFOdSJzjI7brNG6e", "type": "embed"}, {"date": "30 Jul 2026", "data": "1WdgMt4LW0QbEDx0mXfOsZB0DWfVFF3Le", "type": "embed"}, {"date": "29 Jul 2026", "data": "1h7QZYkqCob9qYLIiN0bK_yxiZWs_kaKT", "type": "embed"}, {"date": "27 Jul 2026", "data": "1zDUHD2WHHyDos0XQsXSI-wplaI4vXjgn", "type": "embed"}], "Economic Times": [{"date": "01 Aug 2026", "data": "1PCMG0WH56f-VEKounoF_h6WwVT5YpS61", "type": "embed"}, {"date": "31 Jul 2026", "data": "1x8WnXtG6livyFqEoTQ72-ixdSfuA6z-l", "type": "embed"}, {"date": "30 Jul 2026", "data": "1pDCtPgz1TbF40pYfWbig_dIBog0tiRkK", "type": "embed"}, {"date": "29 Jul 2026", "data": "1OmybXY-Bhb1JBb9YGSB_1tWvvtyoZ5rX", "type": "embed"}, {"date": "27 Jul 2026", "data": "1ihhSYKq-i1megy8dQAW8O8CWYHfYluMV", "type": "embed"}], "Hindustan Times": [{"date": "01 Aug 2026", "data": "1YQsMCe7VGSjcHXnYTVMOYPoz36A3WUks", "type": "embed"}, {"date": "31 Jul 2026", "data": "1pjyjE4BtEYBLcTEvq0yg7boAsqe7xpIa", "type": "embed"}, {"date": "30 Jul 2026", "data": "1fTjd56KUOktZgBL_4oEU2urM0A6D7dNL", "type": "embed"}, {"date": "29 Jul 2026", "data": "1LP-WGG6hW3b6QGQG6XCM5vjXm_Jzgyw7", "type": "embed"}, {"date": "27 Jul 2026", "data": "1v3ZtWFCrTMT0dJtR53hpKLreIPsOnwDl", "type": "embed"}]};
             let currentPaper = null;
 
             const paperListEl = document.getElementById('paper-list');
@@ -116,20 +117,26 @@
 
                 titleEl.textContent = paperName;
 
+                // Handle conditional visibility for "The Hindu" dropdown or multiple local editions
+                const editions = db[paperName];
+                
                 if (paperName === "The Hindu") {
-                    dateSelectorContainer.style.display = 'none';
-                    subtitleEl.textContent = "Latest edition for today.";
+                    if (editions && editions.length > 1) {
+                        dateSelectorContainer.style.display = 'flex';
+                        subtitleEl.textContent = "Select from uploaded local editions.";
+                    } else {
+                        dateSelectorContainer.style.display = 'none';
+                        subtitleEl.textContent = "Latest local edition for today.";
+                    }
                 } else {
                     dateSelectorContainer.style.display = 'flex';
                     subtitleEl.textContent = "Verified archival editions available below.";
                 }
-
-                const editions = db[paperName];
                 
                 if (!editions || editions.length === 0) {
                     dateSelectorEl.innerHTML = '<option>No verified dates found</option>';
                     dateSelectorEl.disabled = true;
-                    showError("No explicitly dated editions have been scraped yet.");
+                    showError("No explicitly dated editions found.");
                     return;
                 }
 
@@ -153,8 +160,7 @@
             });
 
             function renderViewer(editionData) {
-                // Show fullscreen button if it's an embed
-                if (editionData.type === 'embed' || editionData.type === 'raw_embed') {
+                if (editionData.type === 'embed' || editionData.type === 'raw_embed' || editionData.type === 'local_pdf') {
                     fullscreenBtn.classList.remove('hidden');
                 } else {
                     fullscreenBtn.classList.add('hidden');
@@ -163,8 +169,7 @@
                 if (editionData.type === 'embed') {
                     const url = `https://drive.google.com/file/d/${editionData.data}/preview`;
                     viewerContainerEl.innerHTML = `<iframe src="${url}" allow="autoplay" class="w-full h-full border-0 absolute inset-0 rounded-2xl" allowfullscreen></iframe>`;
-                } else if (editionData.type === 'raw_embed') {
-                     // Rendering Direct URL in iframe
+                } else if (editionData.type === 'raw_embed' || editionData.type === 'local_pdf') {
                      viewerContainerEl.innerHTML = `<iframe src="${editionData.data}" class="w-full h-full border-0 absolute inset-0 rounded-2xl" allowfullscreen></iframe>`;
                 } else if (editionData.type === 'external') {
                     viewerContainerEl.innerHTML = `
@@ -175,7 +180,7 @@
                             <h3 class="text-xl font-bold text-slate-800 mb-2">Ready for Download</h3>
                             <p class="text-slate-500 mb-8 max-w-sm mx-auto leading-relaxed">This edition is hosted on an external secure server. Click below to view or download the PDF.</p>
                             <a href="${editionData.data}" target="_blank" class="inline-flex items-center gap-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3.5 px-7 rounded-xl transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5">
-                                Access Today's Edition
+                                Access Edition Source
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
                             </a>
                         </div>
@@ -184,8 +189,7 @@
             }
 
             function toggleFullScreen() {
-                if (!document.fullscreenElement &&    // alternative standard method
-                    !document.mozFullScreenElement && !document.webkitFullscreenElement && !document.msFullscreenElement ) {  // current working methods
+                if (!document.fullscreenElement && !document.mozFullScreenElement && !document.webkitFullscreenElement && !document.msFullscreenElement) {
                     if (viewerContainerEl.requestFullscreen) {
                         viewerContainerEl.requestFullscreen();
                     } else if (viewerContainerEl.msRequestFullscreen) {
