@@ -1,8 +1,6 @@
 import os
 import re
-import requests
 import json
-from bs4 import BeautifulSoup
 from datetime import datetime
 import urllib3
 
@@ -13,8 +11,7 @@ NEWSPAPER_URLS = {
     "Times of India": "https://dailyepaper.in/times-of-india-epaper-pdf-free-download-2026/",
     "Live Mint": "https://dailyepaper.in/live-mint-epaper-feb-2026/",
     "Economic Times": "https://dailyepaper.in/economic-times-newspaper-today-2026/",
-    "Hindustan Times": "https://dailyepaper.in/hindustan-times-epaper-download-2026/",
-    "Business Line": "https://www.careerswave.in/business-line-epaper-pdf-free-download/"
+    "Hindustan Times": "https://dailyepaper.in/hindustan-times-epaper-download-2026/"
 }
 
 def extract_drive_id(text):
@@ -26,6 +23,8 @@ def extract_drive_id(text):
 
 def resolve_download_link(target_link):
     """Bypasses tracking layers to isolate the direct underlying Drive ID."""
+    import requests
+    from bs4 import BeautifulSoup
     headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}
     direct_id = extract_drive_id(target_link)
     if direct_id:
@@ -67,6 +66,8 @@ def extract_date_from_element(element):
 
 def get_recent_papers(url, current_paper_name, max_days=5):
     """Scrapes content-scoped links while enforcing strict cross-paper exclusions."""
+    import requests
+    from bs4 import BeautifulSoup
     headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}
     results = []
     
@@ -113,6 +114,50 @@ def get_recent_papers(url, current_paper_name, max_days=5):
         
     return results
 
+def get_local_hindu_papers():
+    """Scans the script's directory for PDF files matching 'The Hindu' and extracts dates from filenames."""
+    hindu_editions = []
+    current_directory = os.path.dirname(os.path.abspath(__file__))
+    if not current_directory:
+        current_directory = '.'
+
+    print(f"DEBUG: Searching inside directory: {current_directory}")
+    for filename in os.listdir(current_directory):
+        clean_name = filename.lower().replace('_', ' ').replace('-', ' ')
+        if filename.lower().endswith('.pdf') and 'the hindu' in clean_name:
+            date_str = "Latest Edition"
+            
+            # Look for date patterns like DD-MM-YYYY, DD_MM_YYYY, or YYYY-MM-DD
+            date_match = re.search(r'(\d{1,2})[~_ -](\d{1,2})[~_ -](\d{4})', filename)
+            iso_match = re.search(r'(\d{4})[~_ -](\d{1,2})[~_ -](\d{1,2})', filename)
+            
+            if date_match:
+                day, month, year = date_match.groups()
+                try:
+                    dt = datetime(int(year), int(month), int(day))
+                    date_str = dt.strftime("%B %d, %Y")
+                except ValueError:
+                    pass
+            elif iso_match:
+                year, month, day = iso_match.groups()
+                try:
+                    dt = datetime(int(year), int(month), int(day))
+                    date_str = dt.strftime("%B %d, %Y")
+                except ValueError:
+                    pass
+            else:
+                text_date_match = re.search(r'(\d{1,2}\s+[A-Za-z]{3,9}\s+\d{4})', clean_name)
+                if text_date_match:
+                    date_str = text_date_match.group(1)
+
+            hindu_editions.append({
+                "date": date_str,
+                "data": filename,
+                "type": "local_pdf"
+            })
+            
+    return hindu_editions
+
 def generate_professional_dashboard(newspaper_data):
     """Generates the responsive web application template utilizing Tailwind CSS."""
     today_str = datetime.now().strftime("%B %d, %Y")
@@ -134,7 +179,6 @@ def generate_professional_dashboard(newspaper_data):
             ::-webkit-scrollbar-thumb {{ background: #cbd5e1; border-radius: 10px; }}
             ::-webkit-scrollbar-thumb:hover {{ background: #94a3b8; }}
             
-            /* Ensure iframe background is white during fullscreen */
             #viewer-container:fullscreen {{ background-color: white; padding: 0; border-radius: 0; }}
             #viewer-container:-webkit-full-screen {{ background-color: white; padding: 0; border-radius: 0; }}
             #viewer-container:-ms-fullscreen {{ background-color: white; padding: 0; border-radius: 0; }}
@@ -142,6 +186,7 @@ def generate_professional_dashboard(newspaper_data):
     </head>
     <body class="bg-slate-50 text-slate-800 h-screen flex overflow-hidden">
 
+        <!-- Sidebar -->
         <aside class="w-72 bg-white border-r border-slate-200 flex flex-col h-full shadow-[4px_0_24px_rgba(0,0,0,0.02)] z-20">
             <div class="p-6 border-b border-slate-100 bg-gradient-to-b from-slate-50 to-white">
                 <h1 class="text-2xl font-bold text-indigo-700 tracking-tight flex items-center gap-2.5">
@@ -160,6 +205,7 @@ def generate_professional_dashboard(newspaper_data):
             </div>
         </aside>
 
+        <!-- Main Content -->
         <main class="flex-1 flex flex-col h-full relative bg-slate-50/50">
             <header class="bg-white px-8 py-5 border-b border-slate-200 flex justify-between items-center shadow-sm z-10">
                 <div>
@@ -236,20 +282,26 @@ def generate_professional_dashboard(newspaper_data):
 
                 titleEl.textContent = paperName;
 
+                // Handle conditional visibility for "The Hindu" dropdown or multiple local editions
+                const editions = db[paperName];
+                
                 if (paperName === "The Hindu") {{
-                    dateSelectorContainer.style.display = 'none';
-                    subtitleEl.textContent = "Latest edition for today.";
+                    if (editions && editions.length > 1) {{
+                        dateSelectorContainer.style.display = 'flex';
+                        subtitleEl.textContent = "Select from uploaded local editions.";
+                    }} else {{
+                        dateSelectorContainer.style.display = 'none';
+                        subtitleEl.textContent = "Latest local edition for today.";
+                    }}
                 }} else {{
                     dateSelectorContainer.style.display = 'flex';
                     subtitleEl.textContent = "Verified archival editions available below.";
                 }}
-
-                const editions = db[paperName];
                 
                 if (!editions || editions.length === 0) {{
                     dateSelectorEl.innerHTML = '<option>No verified dates found</option>';
                     dateSelectorEl.disabled = true;
-                    showError("No explicitly dated editions have been scraped yet.");
+                    showError("No explicitly dated editions found.");
                     return;
                 }}
 
@@ -273,8 +325,7 @@ def generate_professional_dashboard(newspaper_data):
             }});
 
             function renderViewer(editionData) {{
-                // Show fullscreen button if it's an embed
-                if (editionData.type === 'embed' || editionData.type === 'raw_embed') {{
+                if (editionData.type === 'embed' || editionData.type === 'raw_embed' || editionData.type === 'local_pdf') {{
                     fullscreenBtn.classList.remove('hidden');
                 }} else {{
                     fullscreenBtn.classList.add('hidden');
@@ -283,8 +334,7 @@ def generate_professional_dashboard(newspaper_data):
                 if (editionData.type === 'embed') {{
                     const url = `https://drive.google.com/file/d/${{editionData.data}}/preview`;
                     viewerContainerEl.innerHTML = `<iframe src="${{url}}" allow="autoplay" class="w-full h-full border-0 absolute inset-0 rounded-2xl" allowfullscreen></iframe>`;
-                }} else if (editionData.type === 'raw_embed') {{
-                     // Rendering Direct URL in iframe
+                }} else if (editionData.type === 'raw_embed' || editionData.type === 'local_pdf') {{
                      viewerContainerEl.innerHTML = `<iframe src="${{editionData.data}}" class="w-full h-full border-0 absolute inset-0 rounded-2xl" allowfullscreen></iframe>`;
                 }} else if (editionData.type === 'external') {{
                     viewerContainerEl.innerHTML = `
@@ -295,7 +345,7 @@ def generate_professional_dashboard(newspaper_data):
                             <h3 class="text-xl font-bold text-slate-800 mb-2">Ready for Download</h3>
                             <p class="text-slate-500 mb-8 max-w-sm mx-auto leading-relaxed">This edition is hosted on an external secure server. Click below to view or download the PDF.</p>
                             <a href="${{editionData.data}}" target="_blank" class="inline-flex items-center gap-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3.5 px-7 rounded-xl transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5">
-                                Access Today's Edition
+                                Access Edition Source
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
                             </a>
                         </div>
@@ -304,8 +354,7 @@ def generate_professional_dashboard(newspaper_data):
             }}
 
             function toggleFullScreen() {{
-                if (!document.fullscreenElement &&    // alternative standard method
-                    !document.mozFullScreenElement && !document.webkitFullscreenElement && !document.msFullscreenElement ) {{  // current working methods
+                if (!document.fullscreenElement && !document.mozFullScreenElement && !document.webkitFullscreenElement && !document.msFullscreenElement) {{
                     if (viewerContainerEl.requestFullscreen) {{
                         viewerContainerEl.requestFullscreen();
                     }} else if (viewerContainerEl.msRequestFullscreen) {{
@@ -343,31 +392,26 @@ def generate_professional_dashboard(newspaper_data):
 
     with open("index.html", "w", encoding="utf-8") as file:
         file.write(html_content)
-    print("\n[SUCCESS] ProNews Dashboard updated! Open 'index.html' to view.")
+    print("\n[SUCCESS] ProNews Dashboard updated!")
 
 
 def main():
     print("====================================")
-    print(" Starting Core Filtering Protocol...")
+    print(" Scanning local and remote feeds...")
     print("====================================\n")
     
     newspaper_data = {}
     
-    # 1. Dynamically Generate The Hindu Link for Today
-    today_url_date = datetime.now().strftime("%d~%m~%Y")
-    today_display_date = datetime.now().strftime("%B %d, %Y")
-    
-    # URL structure requested: uploads%2FTHE+HINDU+HD+Delhi+Editable+Full+Edition+DD~MM~YYYY.pdf
-    hindu_dynamic_url = f"https://www.indiags.com/newspaper/pdf.php?file=uploads%2FTHE+HINDU+HD+Delhi+Editable+Full+Edition+{today_url_date}.pdf"
-    
-    print("Injecting dynamic URL for: The Hindu...")
-    newspaper_data["The Hindu"] = [{
-        "date": today_display_date,
-        "data": hindu_dynamic_url,
-        "type": "raw_embed" # CHANGED from "external" to force inline iframe display
-    }]
-    print("  -> Successfully injected today's edition.\n")
-    
+    # 1. Fetch Local "The Hindu" PDF files from the repository folder
+    print("Scanning local directory for 'The Hindu' PDF files...")
+    hindu_papers = get_local_hindu_papers()
+    if hindu_papers:
+        newspaper_data["The Hindu"] = hindu_papers
+        print(f"  -> Found {len(hindu_papers)} local edition(s) for The Hindu.\n")
+    else:
+        print("  -> No local Hindu PDF found. Make sure you name your file starting with 'The Hindu' (e.g., The_Hindu_01_08_2026.pdf).\n")
+        newspaper_data["The Hindu"] = [{"date": "No file uploaded", "data": "", "type": "external"}]
+
     # 2. Scrape the rest of the newspapers dynamically
     for name, url in NEWSPAPER_URLS.items():
         print(f"Scraping valid clean entries for: {name}...")
