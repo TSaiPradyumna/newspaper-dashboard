@@ -11,7 +11,8 @@ NEWSPAPER_URLS = {
     "Times of India": "https://dailyepaper.in/times-of-india-epaper-pdf-free-download-2026/",
     "Live Mint": "https://dailyepaper.in/live-mint-epaper-feb-2026/",
     "Economic Times": "https://dailyepaper.in/economic-times-newspaper-today-2026/",
-    "Hindustan Times": "https://dailyepaper.in/hindustan-times-epaper-download-2026/"
+    "Hindustan Times": "https://dailyepaper.in/hindustan-times-epaper-download-2026/",
+    "Business Line" : "https://www.careerswave.in/business-line-epaper-pdf-free-download/"
 }
 
 def extract_drive_id(text):
@@ -115,62 +116,68 @@ def get_recent_papers(url, current_paper_name, max_days=5):
     return results
 
 def get_local_hindu_papers():
-    """Scans the 'THE HINDU' subfolder for PDF files and extracts dates from filenames."""
+    """Scans the 'THE HINDU' subfolder for PDF files, extracts dates, and sorts them newest first."""
     hindu_editions = []
     current_directory = os.path.dirname(os.path.abspath(__file__))
     if not current_directory:
         current_directory = '.'
 
-    # Define the subfolder path
     hindu_folder = os.path.join(current_directory, "THE HINDU")
     
-    print(f"DEBUG: Checking subfolder -> {hindu_folder}")
-    
     if not os.path.exists(hindu_folder):
-        print(f"DEBUG: 'THE HINDU' folder does not exist yet. Creating it...")
         os.makedirs(hindu_folder)
         return hindu_editions
 
     for filename in os.listdir(hindu_folder):
-        print(f"DEBUG: Checking file inside THE HINDU folder -> {filename}")
         if filename.lower().endswith('.pdf'):
             date_str = "Latest Edition"
+            dt_obj = datetime.min
             clean_name = filename.lower().replace('_', ' ').replace('-', ' ')
             
-            # Look for date patterns like DD-MM-YYYY, DD_MM_YYYY, or YYYY-MM-DD
             date_match = re.search(r'(\d{1,2})[~_ -](\d{1,2})[~_ -](\d{4})', filename)
             iso_match = re.search(r'(\d{4})[~_ -](\d{1,2})[~_ -](\d{1,2})', filename)
             
             if date_match:
                 day, month, year = date_match.groups()
                 try:
-                    dt = datetime(int(year), int(month), int(day))
-                    date_str = dt.strftime("%B %d, %Y")
+                    dt_obj = datetime(int(year), int(month), int(day))
+                    date_str = dt_obj.strftime("%B %d, %Y")
                 except ValueError:
                     pass
             elif iso_match:
                 year, month, day = iso_match.groups()
                 try:
-                    dt = datetime(int(year), int(month), int(day))
-                    date_str = dt.strftime("%B %d, %Y")
+                    dt_obj = datetime(int(year), int(month), int(day))
+                    date_str = dt_obj.strftime("%B %d, %Y")
                 except ValueError:
                     pass
             else:
                 text_date_match = re.search(r'(\d{1,2}\s+[A-Za-z]{3,9}\s+\d{4})', clean_name)
                 if text_date_match:
                     date_str = text_date_match.group(1)
+                    try:
+                        dt_obj = datetime.strptime(date_str, "%d %B %Y")
+                    except ValueError:
+                        pass
 
-            # Path relative to the web viewer html output
             relative_path = f"THE HINDU/{filename}"
 
             hindu_editions.append({
                 "date": date_str,
+                "datetime": dt_obj,
                 "data": relative_path,
                 "type": "local_pdf"
             })
+
+    # Sort editions so that the newest date is always first (index 0)
+    hindu_editions.sort(key=lambda x: x["datetime"], reverse=True)
+    
+    for edition in hindu_editions:
+        if "datetime" in edition:
+            del edition["datetime"]
             
     return hindu_editions
-    
+
 def generate_professional_dashboard(newspaper_data):
     """Generates the responsive web application template utilizing Tailwind CSS."""
     today_str = datetime.now().strftime("%B %d, %Y")
@@ -295,7 +302,6 @@ def generate_professional_dashboard(newspaper_data):
 
                 titleEl.textContent = paperName;
 
-                // Handle conditional visibility for "The Hindu" dropdown or multiple local editions
                 const editions = db[paperName];
                 
                 if (paperName === "The Hindu") {{
@@ -403,10 +409,9 @@ def generate_professional_dashboard(newspaper_data):
     </html>
     """
 
-    with open("index.html", "w", encoding="utf-8") as file:
+    with open("newspaper_dashboard.html", "w", encoding="utf-8") as file:
         file.write(html_content)
     print("\n[SUCCESS] ProNews Dashboard updated!")
-
 
 def main():
     print("====================================")
@@ -415,24 +420,24 @@ def main():
     
     newspaper_data = {}
     
-    # 1. Fetch Local "The Hindu" PDF files from the repository folder
-    print("Scanning local directory for 'The Hindu' PDF files...")
+    # 1. Fetch Local "The Hindu" PDF files from the "THE HINDU" subfolder
+    print("Scanning 'THE HINDU' folder for local PDF files...")
     hindu_papers = get_local_hindu_papers()
     if hindu_papers:
         newspaper_data["The Hindu"] = hindu_papers
-        print(f"  -> Found {len(hindu_papers)} local edition(s) for The Hindu.\n")
+        print(f"  -> Found {len(hindu_papers)} local edition(s) for The Hindu.")
     else:
-        print("  -> No local Hindu PDF found. Make sure you name your file starting with 'The Hindu' (e.g., The_Hindu_01_08_2026.pdf).\n")
+        print("  -> No local Hindu PDF found in 'THE HINDU' folder.")
         newspaper_data["The Hindu"] = [{"date": "No file uploaded", "data": "", "type": "external"}]
 
     # 2. Scrape the rest of the newspapers dynamically
     for name, url in NEWSPAPER_URLS.items():
-        print(f"Scraping valid clean entries for: {name}...")
+        print(f"\nScraping valid clean entries for: {name}...")
         editions = get_recent_papers(url, name, max_days=5)
         newspaper_data[name] = editions
-        print(f"  -> Successfully isolated {len(editions)} matching dates.\n")
+        print(f"  -> Successfully isolated {len(editions)} matching dates.")
         
-    print("Compiling professional web interface...")
+    print("\nCompiling professional web interface...")
     generate_professional_dashboard(newspaper_data)
 
 if __name__ == '__main__':
