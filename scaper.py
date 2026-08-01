@@ -115,17 +115,27 @@ def get_recent_papers(url, current_paper_name, max_days=5):
     return results
 
 def get_local_hindu_papers():
-    """Scans the script's directory for PDF files matching 'The Hindu' and extracts dates from filenames."""
+    """Scans the 'THE HINDU' subfolder for PDF files and extracts dates from filenames."""
     hindu_editions = []
     current_directory = os.path.dirname(os.path.abspath(__file__))
     if not current_directory:
         current_directory = '.'
 
-    print(f"DEBUG: Searching inside directory: {current_directory}")
-    for filename in os.listdir(current_directory):
-        clean_name = filename.lower().replace('_', ' ').replace('-', ' ')
-        if filename.lower().endswith('.pdf') and 'the hindu' in clean_name:
+    # Define the subfolder path
+    hindu_folder = os.path.join(current_directory, "THE HINDU")
+    
+    print(f"DEBUG: Checking subfolder -> {hindu_folder}")
+    
+    if not os.path.exists(hindu_folder):
+        print(f"DEBUG: 'THE HINDU' folder does not exist yet. Creating it...")
+        os.makedirs(hindu_folder)
+        return hindu_editions
+
+    for filename in os.listdir(hindu_folder):
+        print(f"DEBUG: Checking file inside THE HINDU folder -> {filename}")
+        if filename.lower().endswith('.pdf'):
             date_str = "Latest Edition"
+            clean_name = filename.lower().replace('_', ' ').replace('-', ' ')
             
             # Look for date patterns like DD-MM-YYYY, DD_MM_YYYY, or YYYY-MM-DD
             date_match = re.search(r'(\d{1,2})[~_ -](\d{1,2})[~_ -](\d{4})', filename)
@@ -150,9 +160,12 @@ def get_local_hindu_papers():
                 if text_date_match:
                     date_str = text_date_match.group(1)
 
+            # Path relative to the web viewer html output
+            relative_path = f"THE HINDU/{filename}"
+
             hindu_editions.append({
                 "date": date_str,
-                "data": filename,
+                "data": relative_path,
                 "type": "local_pdf"
             })
             
