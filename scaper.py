@@ -170,7 +170,7 @@ def get_local_hindu_papers():
             })
             
     return hindu_editions
-
+    
 def generate_professional_dashboard(newspaper_data):
     """Generates the responsive web application template utilizing Tailwind CSS."""
     today_str = datetime.now().strftime("%B %d, %Y")
